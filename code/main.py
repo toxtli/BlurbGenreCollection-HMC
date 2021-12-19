@@ -111,11 +111,13 @@ def train(model, save = True, early_stopping = True, validation = True):
     if validation:
         metrics_callback = Metrics_eval(validation_data = (data['X_dev'], data['y_dev']))
         callbacks_list.append(metrics_callback)
+        print("TRAINING 1")
         model.fit(data['X_train'], data['y_train'], batch_size=args.batch_size, epochs=args.epochs,
          verbose=1, callbacks=callbacks_list, validation_data=(data['X_dev'], data['y_dev'])) # starts training
     else:
         metrics_callback = Metrics_eval(validation_data = (data['X_test'], data['y_test']))
         callbacks_list.append(metrics_callback)
+        print("TRAINING 2")
         model.fit(data['X_train'], data['y_train'], batch_size=args.batch_size, epochs=args.epochs, verbose=1,
          callbacks = callbacks_list)
 
