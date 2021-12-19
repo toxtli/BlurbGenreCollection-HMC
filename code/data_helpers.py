@@ -337,9 +337,12 @@ def build_input_data(sentences, labels, vocabulary):
     for sentence in sentences:
         record = []
         for word in sentence:
-            print(word)
-            print(vocabulary[word])
-            record.append(vocabulary[word])
+            # print(vocabulary[word])
+            if word in vocabulary:
+                record.append(vocabulary[word])
+            else:
+                print(word)
+                record.append(10)
         x.append(record)
     # x = np.array([[vocabulary[word] for word in sentence] for sentence in sentences])
     y = np.array(labels)
