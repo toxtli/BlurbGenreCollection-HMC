@@ -9,7 +9,8 @@ from keras.layers import Dense
 from keras.layers import LSTM
 from keras.layers import Input, Dense, Embedding, Conv2D, MaxPool2D
 from keras.layers import Reshape, Flatten, Dropout, Concatenate
-from keras.optimizers import Adam, RMSprop, Adagrad
+from tensorflow.keras.optimizers import Adam, RMSprop, Adagrad
+# from keras.optimizers import Adam, RMSprop, Adagrad
 from keras.models import Model
 import keras.losses
 from keras.layers import Embedding
