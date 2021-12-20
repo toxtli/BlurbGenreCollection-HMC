@@ -115,7 +115,7 @@ class CapsuleLayer(layers.Layer):
                 # inputs_hat.shape=[None, num_capsule, input_num_capsule, dim_capsule]
                 # The first two dimensions as `batch` dimension,
                 # then matmal: [dim_capsule] x [input_num_capsule, dim_capsule]^T -> [input_num_capsule].
-                b.shape=[batch_size, num_capsule, input_num_capsule]
+                # b.shape=[batch_size, num_capsule, input_num_capsule]
                 b += K.batch_dot(outputs, inputs_hat, [2, 3])
                 pass
         # End: Routing algorithm -----------------------------------------------------------------------#
