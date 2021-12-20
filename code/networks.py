@@ -23,7 +23,7 @@ from capsulelayers import CapsuleLayer, PrimaryCap, Length
 from keras import backend as K
 import sys
 import pickle
-import tensorflow as ts
+import tensorflow as tf
 
 
 def create_model_capsule(preload, embedding_dim, sequence_length, num_filters,
