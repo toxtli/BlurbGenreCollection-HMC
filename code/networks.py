@@ -23,6 +23,7 @@ from capsulelayers import CapsuleLayer, PrimaryCap, Length
 from keras import backend as K
 import sys
 import pickle
+import tensorflow as ts
 
 
 def create_model_capsule(preload, embedding_dim, sequence_length, num_filters,
@@ -78,6 +79,8 @@ def margin_loss(y_true, y_pred):
     """
     Margin loss as described in Sabour et al. (2017)
     """
+    y_true = tf.cast(y_true, tf.float32)
+    y_pred = tf.cast(y_pred, tf.float32)
     L = y_true * K.square(K.maximum(0., 0.9 - y_pred)) + \
         0.5 * (1 - y_true) * K.square(K.maximum(0., y_pred - 0.1))
 
