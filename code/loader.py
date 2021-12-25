@@ -90,6 +90,8 @@ class Blurb_Loader(Loader_Interface):
                         categories.add(str(t1.string))
             data.append((str(book_soup.find("body").string), categories))
             #print(data[0])
-
+        print("DAAAATTTTAAAAA LLLOOOAAADDDEEEERRR")
+        print(data[0])
+        print(data[1])
         shuffle(data)
         return data
