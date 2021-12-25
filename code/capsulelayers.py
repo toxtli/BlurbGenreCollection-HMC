@@ -75,14 +75,14 @@ class CapsuleLayer(layers.Layer):
         print(self.W)
         print(self.W[0][0][0][0])
         self.built = True
-
+    
     def call(self, inputs, training=None):
         # inputs.shape=[None, input_num_capsule, input_dim_capsule]
         # inputs_expand.shape=[None, 1, input_num_capsule, input_dim_capsule]
         inputs_expand = K.expand_dims(inputs, 1)
 
         # Replicate num_capsule dimension to prepare being multiplied by W
-        # inputs_tiled.shape=[None, num_capsule, input_num_capsule, input_dim_capsule]
+        # inputs_tiled.shape=[None, num_capsule, input_num_capsule, input_dim_capsule](?,12,2805,8)
         inputs_tiled = K.tile(inputs_expand, [1, self.num_capsule, 1, 1])
 
         # Compute `inputs * W` by scanning inputs_tiled on dimension 0.
@@ -90,25 +90,33 @@ class CapsuleLayer(layers.Layer):
         # W.shape=[num_capsule, input_num_capsule, dim_capsule, input_dim_capsule]
         # Regard the first two dimensions as `batch` dimension,
         # then matmul: [input_dim_capsule] x [dim_capsule, input_dim_capsule]^T -> [dim_capsule].
-        # inputs_hat.shape = [None, num_capsule, input_num_capsule, dim_capsule]
-        inputs_hat = K.map_fn(lambda x: K.batch_dot(x, self.W, [2, 3]), elems=inputs_tiled)
+        # inputs_hat.shape = [None, num_capsule, input_num_capsule, dim_capsule](?,12,?,2805,16)
+
+
+        #inputs_hat = K.map_fn(lambda x: K.batch_dot(x, self.W, [2, 3]), elems=inputs_tiled)
+        inputs_hat = K.map_fn(lambda x: tf.reshape(tf.matmul(self.W,K.expand_dims(x,3)),[self.num_capsule,self.input_num_capsule,self.dim_capsule]), elems=inputs_tiled)
 
         # Begin: Routing algorithm ---------------------------------------------------------------------#
         # The prior for coupling coefficient, initialized as zeros.
-        # b.shape = [None, self.num_capsule, self.input_num_capsule].
+        # b.shape = [None, self.num_capsule, self.input_num_capsule]
+
         b = tf.zeros(shape=[K.shape(inputs_hat)[0], self.num_capsule, self.input_num_capsule])
 
         assert self.routings > 0, 'The routings should be > 0.'
         for i in range(self.routings):
             # c.shape=[batch_size, num_capsule, input_num_capsule]
-            c = tf.nn.softmax(b, axis=1)
+            c = tf.nn.softmax(b, dim=1)
 
             # c.shape =  [batch_size, num_capsule, input_num_capsule]
             # inputs_hat.shape=[None, num_capsule, input_num_capsule, dim_capsule]
             # The first two dimensions as `batch` dimension,
             # then matmal: [input_num_capsule] x [input_num_capsule, dim_capsule] -> [dim_capsule].
             # outputs.shape=[None, num_capsule, dim_capsule]
-            outputs = squash(K.batch_dot(c, inputs_hat, [2, 2]))  # [None, 10, 16]
+
+            #outputs = squash(K.batch_dot(c, inputs_hat, [2, 2]))  # [None, 10, 16]
+            c = tf.expand_dims(c,2)
+            z = tf.matmul(c,inputs_hat)
+            outputs = squash(tf.reshape(z,[-1,self.num_capsule,self.dim_capsule]))
 
             if i < self.routings - 1:
                 # outputs.shape =  [None, num_capsule, dim_capsule]
@@ -116,9 +124,13 @@ class CapsuleLayer(layers.Layer):
                 # The first two dimensions as `batch` dimension,
                 # then matmal: [dim_capsule] x [input_num_capsule, dim_capsule]^T -> [input_num_capsule].
                 # b.shape=[batch_size, num_capsule, input_num_capsule]
-                b += K.batch_dot(outputs, inputs_hat, [2, 3])
-                pass
-        # End: Routing algorithm -----------------------------------------------------------------------#
+                #b += K.batch_dot(outputs, inputs_hat, [2, 3])
+                outputs1 = tf.expand_dims(outputs,3)
+                x = tf.matmul(inputs_hat,outputs1)
+                x = tf.reshape(x,[-1,self.num_capsule,self.input_num_capsule])
+                b += x
+
+            # End: Routing algorithm -----------------------------------------------------------------------#
 
         return outputs
 
