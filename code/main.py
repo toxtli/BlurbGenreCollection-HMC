@@ -108,6 +108,8 @@ def train(model, save = True, early_stopping = True, validation = True):
     if early_stopping:
         early_stopping = EarlyStopping(monitor='val_loss', min_delta=0.001, patience=3, verbose=0, mode='auto')
         callbacks_list.append(early_stopping)
+    print(data['X_train'])
+    print(data['y_train'])
     if validation:
         metrics_callback = Metrics_eval(validation_data = (data['X_dev'], data['y_dev']))
         callbacks_list.append(metrics_callback)
